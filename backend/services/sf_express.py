@@ -5,7 +5,7 @@ import requests
 import hashlib
 import base64
 import urllib.parse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 class Address(BaseModel):
@@ -20,7 +20,7 @@ class ShippingData(BaseModel):
     destAddress: Address
     searchPrice: str
     srcAddress: Address
-    weight: int
+    weight: float = Field(..., description="Weight of the package in kg")
 
 # 顺丰 API 常量
 partnerID = 'Y4E4GTVT'
@@ -69,30 +69,3 @@ def call_sf_express_service(shipping_data: ShippingData):
         print(f"SF API call failed: {e}")
     
     return None
-
-# 示例使用和测试函数
-def run_example():
-    shipping_data = ShippingData(
-        businessType="1",
-        consignedTime=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        destAddress=Address(
-            province="广东省",
-            city="深圳市",
-            county="南山区",
-            address="科技园"
-        ),
-        searchPrice="1",
-        srcAddress=Address(
-            province="北京市",
-            city="北京市",
-            county="朝阳区",
-            address="三里屯"
-        ),
-        weight=1
-    )
-    
-    result = call_sf_express_service(shipping_data)
-    print(result)
-
-if __name__ == "__main__":
-    run_example()

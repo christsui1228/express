@@ -10,8 +10,8 @@ class KyExpressAPI:
         self.token = None
         self.refresh_token = None
         self.token_expire_time = 0
-        self.token_url = "https://open.ky-express.com/security/sandbox/accessToken"
-        self.api_url = "https://open.ky-express.com/sandbox/router/rest"
+        self.token_url = "https://open.ky-express.com/security/token"
+        self.api_url = "https://open.ky-express.com/router/rest"
 
     def get_token(self):
         headers = {
@@ -67,23 +67,57 @@ class KyExpressAPI:
 
         return result
 
+    def call_multiple_apis(self, methods, biz_bodies):
+        results = {}
+        for method, biz_body in zip(methods, biz_bodies):
+            try:
+                result = self.call_api(method, biz_body)
+                results[method] = result
+            except Exception as e:
+                results[method] = {"error": str(e)}
+        return results
+
 def main():
     app_key = "83417"  # 替换为您的沙盒环境app_key
     app_secret = "B7B18FA140F8ECFD8BCBDBE28724A24D"  # 替换为您的沙盒环境app_secret
 
     api = KyExpressAPI(app_key, app_secret)
 
-    method = "open.api.openCommon.queryTimeliness"
-    biz_body = {
-        "customerCode": "075525131031",
-        "mailingTime": "2019-04-20 10:00",
-        "sendAddress": "北京北京市朝阳区市平房（地区）乡姚家园3楼89",
-        "collectAddress": "浙江省嘉兴市平湖市新仓镇杉青港路1301号"
-    }
+    methods = [
+        "open.api.openCommon.queryTimeliness",
+        "open.api.openCommon.queryFreightCharge"
+    ]
+    
+    biz_bodies = [
+        {
+            "customerCode": "02063137676",
+            "mailingTime": "2024-09-24 10:00",
+            "sendAddress": "广东省深圳市南山区西丽街道仙洞路16号深信服科技大厦",
+            "collectAddress": "张子良 18211242431 广东省广州市白云区沙太路新百佳服装城 A21078  "
+        },
+        {
+           "platformFlag": "E1MLIY94V1H9MYMO7ICH9TTFA24TKQHK",
+           "customerCode": "02063137676",
+           "beginAreaCode": "0755",
+           "endAreaCode": "0711",
+           "billingTime": "2024-09-2024 14:25",
+           "pickupCustomerCode": "02063137676",
+           "weight": 60,
+           "unit": 1,
+           "size": 2.2,
+           "manageWeight": 13,
+           "beginCityName": "深圳",
+           "endCityName": "广州",
+           "beginAddress": "2r15",
+           "endAddress": "1p7e"
+        }
+    ]
 
     try:
-        response = api.call_api(method, biz_body)
-        print("response =", json.dumps(response, ensure_ascii=False, indent=2))
+        responses = api.call_multiple_apis(methods, biz_bodies)
+        for method, response in responses.items():
+            print(f"\nResponse for {method}:")
+            print(json.dumps(response, ensure_ascii=False, indent=2))
     except Exception as e:
         print(f"An error occurred: {e}")
 
